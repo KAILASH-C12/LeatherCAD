@@ -1,0 +1,170 @@
+import { useState } from 'react';
+import { CreditCard, Truck, CheckCircle, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+import { useCartStore } from '../store/CartStore';
+
+export default function CheckoutPage() {
+    const navigate = useNavigate();
+    const [step, setStep] = useState(1); // 1: Info, 2: Payment, 3: Success
+    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        address: '',
+        city: '',
+        postalCode: '',
+        country: 'US',
+        cardNumber: '',
+        expiry: '',
+        cvc: ''
+    });
+
+    // Real cart items
+    const { items, getTotal, clearCart } = useCartStore();
+    const cartTotal = getTotal();
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleShippingSubmit = (e) => {
+        e.preventDefault();
+        setStep(2);
+    };
+
+    const handlePaymentSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            // 1. Create Payment Intent (Mock)
+            const intentRes = await axios.post('http://localhost:3000/api/payment/create-intent', {
+                items: items,
+                total: cartTotal
+            });
+
+            // 2. Confirm Payment (Mock delay)
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // 3. Create Order
+            // await axios.post('/api/orders', { ...orderData });
+
+            clearCart();
+            setStep(3);
+        } catch (error) {
+            console.error('Payment failed', error);
+            alert('Payment failed. Please try again.');
+        } finally {
+            setLoading(false);
+            // Clear cart on success (moved here for mock flow simplicity, ideally after success confirmation)
+            if (step === 2) {
+                // Wait, step logic is inside. We should clear only on success.
+            }
+        }
+    };
+
+    if (step === 3) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center p-4">
+                <div className="bg-card border border-border p-8 rounded-2xl max-w-md w-full text-center">
+                    <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500">
+                        <CheckCircle size={32} />
+                    </div>
+                    <h2 className="text-2xl font-bold mb-2 text-foreground">Order Confirmed!</h2>
+                    <p className="text-muted-foreground mb-6">Thank you for your purchase. Your custom leather product is being crafted with care.</p>
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium"
+                    >
+                        Go to Dashboard
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-background pt-24 pb-12 px-4">
+            <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
+                {/* Form Section */}
+                <div>
+                    <div className="flex gap-4 mb-8">
+                        <div className={`flex items-center gap-2 text-sm font-medium ${step >= 1 ? 'text-primary' : 'text-muted-foreground'}`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 1 ? 'border-primary bg-primary/10' : 'border-border'}`}>1</div>
+                            Shipping
+                        </div>
+                        <div className="h-8 flex items-center">
+                            <div className="w-8 h-0.5 bg-border"></div>
+                        </div>
+                        <div className={`flex items-center gap-2 text-sm font-medium ${step >= 2 ? 'text-primary' : 'text-muted-foreground'}`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 2 ? 'border-primary bg-primary/10' : 'border-border'}`}>2</div>
+                            Payment
+                        </div>
+                    </div>
+
+                    {step === 1 ? (
+                        <form onSubmit={handleShippingSubmit} className="space-y-4">
+                            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                                <Truck size={20} /> Shipping Details
+                            </h2>
+                            <div className="grid grid-cols-2 gap-4">
+                                <input type="text" name="firstName" placeholder="First Name" required className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
+                                <input type="text" name="lastName" placeholder="Last Name" required className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
+                            </div>
+                            <input type="text" name="address" placeholder="Address" required className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
+                            <div className="grid grid-cols-2 gap-4">
+                                <input type="text" name="city" placeholder="City" required className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
+                                <input type="text" name="postalCode" placeholder="Postal Code" required className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
+                            </div>
+                            <button type="submit" className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium mt-4">Continue to Payment</button>
+                        </form>
+                    ) : (
+                        <form onSubmit={handlePaymentSubmit} className="space-y-4">
+                            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                                <CreditCard size={20} /> Payment Method
+                            </h2>
+                            <div className="p-4 border border-primary/30 bg-primary/5 rounded-xl mb-4 text-sm text-primary">
+                                Mock Mode: No real charge will be made.
+                            </div>
+                            <input type="text" name="cardNumber" placeholder="Card Number" className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
+                            <div className="grid grid-cols-2 gap-4">
+                                <input type="text" name="expiry" placeholder="MM/YY" className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
+                                <input type="text" name="cvc" placeholder="CVC" className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
+                            </div>
+                            <button type="submit" disabled={loading} className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium mt-4 flex items-center justify-center gap-2">
+                                {loading ? <Loader2 className="animate-spin" /> : `Pay $${cartTotal.toFixed(2)}`}
+                            </button>
+                            <button type="button" onClick={() => setStep(1)} className="w-full py-3 text-muted-foreground hover:text-foreground">Back to Shipping</button>
+                        </form>
+                    )}
+                </div>
+
+                {/* Order Summary */}
+                <div className="bg-card border border-border p-6 rounded-2xl h-fit">
+                    <h3 className="font-bold text-lg mb-4">Order Summary</h3>
+                    <div className="space-y-4 mb-4">
+                        {items.length === 0 ? (
+                            <p className="text-muted-foreground text-sm">Your cart is empty.</p>
+                        ) : (
+                            items.map(item => (
+                                <div key={item.id} className="flex justify-between items-center">
+                                    <div>
+                                        <div className="font-medium">{item.name}</div>
+                                        <div className="text-xs text-muted-foreground">Qty: {item.quantity}</div>
+                                    </div>
+                                    <div>${item.price.toFixed(2)}</div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                    <div className="border-t border-border pt-4 flex justify-between font-bold text-lg">
+                        <span>Total</span>
+                        <span>${cartTotal.toFixed(2)}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

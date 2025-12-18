@@ -1,0 +1,21 @@
+node_modules/three-mesh-bvh/src/utils/ExtensionUtilities.js (6:26) "BatchedMesh" is not exported by "node_modules/three/build/three.module.js", imported by "node_modules/three-mesh-bvh/src/utils/ExtensionUtilities.js".
+[31m"default" is not exported by "src/store/ConfiguratorStore.js", imported by "src/components/customizer/ProductViewer.jsx".[39m
+file: [36mC:/Users/OM/Desktop/LeatherCAD/src/components/customizer/ProductViewer.jsx:4:7[39m
+[33m2: import { useFrame, useThree } from '@react-three/fiber';
+3: import { useGLTF, Html, Outlines } from '@react-three/drei';
+4: import useConfiguratorStore from '../../store/ConfiguratorStore';
+          ^
+5: import * as THREE from 'three';
+6: import { gsap } from 'gsap';[39m
+[31merror during build:
+RollupError: "default" is not exported by "src/store/ConfiguratorStore.js", imported by "src/components/customizer/ProductViewer.jsx".
+    at error (file:///C:/Users/OM/Desktop/LeatherCAD/node_modules/rollup/dist/es/shared/node-entry.js:2287:30)
+    at Module.error (file:///C:/Users/OM/Desktop/LeatherCAD/node_modules/rollup/dist/es/shared/node-entry.js:13745:16)
+    at Module.traceVariable (file:///C:/Users/OM/Desktop/LeatherCAD/node_modules/rollup/dist/es/shared/node-entry.js:14175:29)
+    at ModuleScope.findVariable (file:///C:/Users/OM/Desktop/LeatherCAD/node_modules/rollup/dist/es/shared/node-entry.js:12615:39)
+    at FunctionScope.findVariable (file:///C:/Users/OM/Desktop/LeatherCAD/node_modules/rollup/dist/es/shared/node-entry.js:7124:38)
+    at ChildScope.findVariable (file:///C:/Users/OM/Desktop/LeatherCAD/node_modules/rollup/dist/es/shared/node-entry.js:7124:38)
+    at Identifier.bind (file:///C:/Users/OM/Desktop/LeatherCAD/node_modules/rollup/dist/es/shared/node-entry.js:8319:40)
+    at CallExpression.bind (file:///C:/Users/OM/Desktop/LeatherCAD/node_modules/rollup/dist/es/shared/node-entry.js:5892:23)
+    at CallExpression.bind (file:///C:/Users/OM/Desktop/LeatherCAD/node_modules/rollup/dist/es/shared/node-entry.js:9890:15)
+    at VariableDeclarator.bind (file:///C:/Users/OM/Desktop/LeatherCAD/node_modules/rollup/dist/es/shared/node-entry.js:5892:23)[39m
