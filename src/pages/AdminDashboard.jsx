@@ -1,23 +1,37 @@
 import { useState, useEffect } from 'react';
 import { Package, Layers, Users, Plus, Edit, Trash2, Search, Settings, LogOut, LayoutDashboard, ChevronRight, ShoppingBag, Clock, CheckCircle, XCircle, FolderKanban } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useUser } from '@clerk/clerk-react';
+import { useUser, useAuth } from '@clerk/clerk-react';
 import axios from 'axios';
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
     const { user } = useUser();
+    const { getToken } = useAuth();
     const [activeTab, setActiveTab] = useState('dashboard');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Mock Orders Data
-    const mockOrders = [
-        { id: 'ORD-001', customer: 'John Doe', date: '2023-11-20', total: 149.00, status: 'Completed', items: 1 },
-        { id: 'ORD-002', customer: 'Alice Smith', date: '2023-11-21', total: 299.50, status: 'Processing', items: 2 },
-        { id: 'ORD-003', customer: 'Bob Wilson', date: '2023-11-21', total: 89.00, status: 'Pending', items: 1 },
-        { id: 'ORD-004', customer: 'Emma Brown', date: '2023-11-22', total: 450.00, status: 'Completed', items: 3 },
-    ];
+    // Orders State
+    const [orders, setOrders] = useState([]);
+
+    useEffect(() => {
+        if (activeTab === 'orders') {
+            fetchOrders();
+        }
+    }, [activeTab]);
+
+    const fetchOrders = async () => {
+        try {
+            const token = await getToken();
+            const response = await axios.get('http://localhost:3000/api/orders', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setOrders(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+        }
+    };
 
     useEffect(() => {
         fetchProducts();
@@ -48,7 +62,7 @@ export default function AdminDashboard() {
 
     const fetchProjects = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = await getToken();
             const response = await axios.get('http://localhost:3000/api/projects', {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -61,7 +75,7 @@ export default function AdminDashboard() {
     const handleCreateProject = async (e) => {
         e.preventDefault();
         try {
-            const token = localStorage.getItem('token');
+            const token = await getToken();
             await axios.post('http://localhost:3000/api/projects', newProject, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -84,7 +98,7 @@ export default function AdminDashboard() {
 
     const fetchDesigns = async () => {
         try {
-            const token = localStorage.getItem('token');
+            const token = await getToken();
             const response = await axios.get('http://localhost:3000/api/designs', {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -98,7 +112,7 @@ export default function AdminDashboard() {
 
     const handleUpdateStatus = async (id, status) => {
         try {
-            const token = localStorage.getItem('token');
+            const token = await getToken();
             await axios.put(`http://localhost:3000/api/designs/${id}/status`,
                 { status },
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -280,6 +294,47 @@ export default function AdminDashboard() {
                                 {projects.length === 0 && (
                                     <p className="text-muted-foreground col-span-3 text-center py-8">No projects found.</p>
                                 )}
+                            </div>
+                        </div>
+                    ) : activeTab === 'orders' ? (
+                        <div className="space-y-6">
+                            <h1 className="text-2xl font-bold text-foreground">All Orders</h1>
+                            <div className="bg-card border border-border rounded-xl overflow-hidden">
+                                <table className="w-full text-left text-sm">
+                                    <thead className="bg-muted text-muted-foreground border-b border-border">
+                                        <tr>
+                                            <th className="p-4 font-medium">Order ID</th>
+                                            <th className="p-4 font-medium">Customer</th>
+                                            <th className="p-4 font-medium">Date</th>
+                                            <th className="p-4 font-medium">Total</th>
+                                            <th className="p-4 font-medium">Paid</th>
+                                            <th className="p-4 font-medium">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border">
+                                        {orders.map((order) => (
+                                            <tr key={order._id} className="hover:bg-muted/50 transition-colors">
+                                                <td className="p-4 font-medium">{order._id.substring(0, 8)}...</td>
+                                                <td className="p-4">{order.user?.name || order.shippingAddress?.firstName || 'Guest'}</td>
+                                                <td className="p-4">{new Date(order.createdAt).toLocaleDateString()}</td>
+                                                <td className="p-4">${order.totalPrice.toFixed(2)}</td>
+                                                <td className="p-4">
+                                                    {order.isPaid ? <span className="text-green-500 font-bold">Yes</span> : <span className="text-red-500">No</span>}
+                                                </td>
+                                                <td className="p-4">
+                                                    <span className={`px-2 py-1 rounded text-xs font-bold ${order.isDelivered ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                        {order.isDelivered ? 'Delivered' : 'Processing'}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {orders.length === 0 && (
+                                            <tr>
+                                                <td colSpan="6" className="p-8 text-center text-muted-foreground">No orders found.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     ) : (

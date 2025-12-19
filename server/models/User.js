@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+        required: false // Not required for Clerk users
     },
     role: {
         type: String,
@@ -32,6 +32,11 @@ const userSchema = new mongoose.Schema({
     }],
     company: {
         type: String
+    },
+    clerkId: {
+        type: String,
+        unique: true,
+        sparse: true
     },
     googleId: {
         type: String,

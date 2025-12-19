@@ -5,11 +5,13 @@ import { ArrowLeft, Share2, Download, Save, ShoppingCart, Layers, Palette, Spark
 import axios from 'axios';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/CartStore';
+import { useAuth } from '@clerk/clerk-react';
 
 export default function Customizer() {
     // Hook for URL params
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const { getToken } = useAuth();
     const addItem = useCartStore(state => state.addItem);
     const productFromUrl = searchParams.get('product') || 'bag';
 
@@ -45,7 +47,7 @@ export default function Customizer() {
         setIsGenerating(true);
         setAiPreviewConfig(null);
         try {
-            const token = localStorage.getItem('token');
+            const token = await getToken();
             const response = await axios.post('http://localhost:3000/api/ai/generate-design', {
                 prompt: aiPrompt,
                 productType: selectedProduct
@@ -101,7 +103,7 @@ export default function Customizer() {
             const name = prompt("Enter a name for your design:", `My Custom ${selectedProduct}`);
             if (!name) return;
 
-            const token = localStorage.getItem('token');
+            const token = await getToken();
             if (!token) {
                 alert("Please login to save designs.");
                 navigate('/login');
@@ -282,8 +284,8 @@ export default function Customizer() {
                                         setActivePart(newParts[0]);
                                     }}
                                     className={`px-3 py-2 rounded-lg text-sm font-medium capitalize transition-all border ${selectedProduct === type
-                                            ? 'bg-black text-white border-black shadow-md'
-                                            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                        ? 'bg-black text-white border-black shadow-md'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                                         }`}
                                 >
                                     {type}

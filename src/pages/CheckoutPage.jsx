@@ -4,10 +4,12 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+import { useAuth } from '@clerk/clerk-react';
 import { useCartStore } from '../store/CartStore';
 
 export default function CheckoutPage() {
     const navigate = useNavigate();
+    const { getToken } = useAuth();
     const [step, setStep] = useState(1); // 1: Info, 2: Payment, 3: Success
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -47,7 +49,7 @@ export default function CheckoutPage() {
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             // 3. Create Order in DB
-            const token = localStorage.getItem('token');
+            const token = await getToken();
             const orderConfig = {
                 headers: { Authorization: `Bearer ${token}` }
             };

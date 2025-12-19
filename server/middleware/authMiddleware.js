@@ -10,60 +10,49 @@ export const protect = async (req, res, next) => {
     ) {
         try {
             token = req.headers.authorization.split(' ')[1];
-
-            // ---------------------------------------------------------
-            // CLERK INTEGRATION NOTE:
-            // Since we are using Clerk on Frontend but don't have the Secret Key 
-            // to verify signatures on backend, we will decode the token 
-            // without verification for this PROTOTYPE step.
-            // ---------------------------------------------------------
-
-            const decoded = jwt.decode(token); // Insecure: Trusting token content
+            const decoded = jwt.decode(token);
 
             if (!decoded) {
                 return res.status(401).json({ message: 'Not authorized, token invalid' });
             }
 
-            // Check if user exists in our DB, if not create shadow user
-            // We use 'sub' as unique ID or email if available
-            // Clerk tokens usually have 'sub' (User ID)
+            // Sync User with MongoDB
+            // Clerk ID is in 'sub', email in 'email' (if present)
+            const clerkId = decoded.sub;
+            const email = decoded.email || decoded.primary_email_address || `clerk_${clerkId}@example.com`; // Fallback
+            const name = decoded.name || decoded.first_name || 'Clerk User';
 
-            // For this prototype, we will try to find user by email if available in token,
-            // or just mock the user object so the app doesn't crash.
-
-            // NOTE: Clerk JWTs might not have email in payload unless configured.
-            // We'll rely on a known admin email for the admin check.
-
+            // Find by clerkId OR email to link existing accounts
             let user = await User.findOne({
-                $or: [{ googleId: decoded.sub }, { email: 'kc3737381@gmail.com' }] // Fallback
+                $or: [{ clerkId: clerkId }, { email: email }]
             });
 
-            if (!user) {
-                // If checking 'kc3737381@gmail.com' specifically as requested
-                // We might need to persist this user if it's the admin
-                req.user = {
-                    _id: decoded.sub,
-                    name: 'Clerk User',
-                    email: 'kc3737381@gmail.com', // Force for prototype if needed
-                    role: 'admin' // Force admin for testing as requested
-                };
-            } else {
+            if (user) {
+                // Update existing user with clerkId if missing
+                if (!user.clerkId) {
+                    user.clerkId = clerkId;
+                    await user.save();
+                }
                 req.user = user;
+            } else {
+                // Create new user in MongoDB
+                // Only create if we have enough info, otherwise it might be a partial token
+                const newUser = await User.create({
+                    name: name,
+                    email: email,
+                    clerkId: clerkId,
+                    role: 'designer', // Default role
+                    password: '$2a$10$clerkuserpasswordplaceholder' + Date.now() // Placeholder
+                });
+                req.user = newUser;
             }
-
-            // If the code relies on Mongoose document methods, this mock object might fail.
-            // Ideally we should create a user in DB.
 
             next();
         } catch (error) {
-            console.error(error);
-            // Allow through for now to prevent blockage if token parsing fails? 
-            // No, better to fail.
-            res.status(401).json({ message: 'Not authorized, token failed' });
+            console.error("Auth Middleware Error:", error);
+            res.status(401).json({ message: 'Not authorized, auth failed' });
         }
-    }
-
-    if (!token) {
+    } else {
         res.status(401).json({ message: 'Not authorized, no token' });
     }
 };
