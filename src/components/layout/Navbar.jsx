@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ShoppingBag, User, Shield } from 'lucide-react';
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 
 import { useCartStore } from '../../store/CartStore';
 
@@ -37,11 +38,19 @@ export default function Navbar() { // Removed props
                         )}
                     </button>
 
-                    <Link to="/login/designer" className="text-sm font-medium hover:text-white transition-colors">Login</Link>
-                    <Link to="/dashboard" className="text-sm font-medium hover:text-white transition-colors">Dashboard</Link>
-                    <Link to="/login/designer" className="btn-primary flex items-center gap-2">
-                        Get Started
-                    </Link>
+                    <SignedOut>
+                        <Link to="/login" className="text-sm font-medium hover:text-white transition-colors">
+                            Sign In
+                        </Link>
+                        <Link to="/pricing" className="btn-primary flex items-center gap-2">
+                            Get Started
+                        </Link>
+                    </SignedOut>
+
+                    <SignedIn>
+                        <Link to="/dashboard" className="text-sm font-medium hover:text-white transition-colors">Dashboard</Link>
+                        <UserButton afterSignOutUrl="/" />
+                    </SignedIn>
                 </div>
             </div>
         </nav>

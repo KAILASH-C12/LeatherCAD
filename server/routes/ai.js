@@ -24,7 +24,7 @@ router.post('/generate-design', async (req, res) => {
             return res.status(400).json({ message: 'Prompt is required' });
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        const model = getGeminiModel();
 
         const systemPrompt = `
             You are a fashion design assistant for a leather product configurator.
@@ -47,13 +47,28 @@ router.post('/generate-design', async (req, res) => {
             User Prompt: "${prompt}"
         `;
 
-        const result = await model.generateContent(systemPrompt);
-        const response = await result.response;
-        const text = response.text();
+        let config;
+        try {
+            const model = getGeminiModel();
+            const result = await model.generateContent(systemPrompt);
+            const response = await result.response;
+            const text = response.text();
 
-        // Clean up markdown if present
-        const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-        const config = JSON.parse(jsonStr);
+            // Clean up markdown if present
+            const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            config = JSON.parse(jsonStr);
+        } catch (aiError) {
+            console.error('Gemini API Failed, using fallback:', aiError.message);
+            // Fallback configurations based on product type
+            const fallbacks = {
+                jacket: { body: "#333333", sleeves: "#000000", hardware: "#C0C0C0" },
+                bag: { body: "#8B4513", handle: "#654321", hardware: "#FFD700" },
+                boots: { body: "#5C4033", sole: "#1A1A1A", hardware: "#B87333" }
+            };
+            config = fallbacks[productType] || fallbacks.bag;
+            // Add a flag to inform frontend
+            config.isFallback = true;
+        }
 
         res.json({ config });
     } catch (error) {

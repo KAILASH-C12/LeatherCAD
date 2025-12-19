@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CreditCard, Truck, CheckCircle, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -40,28 +41,43 @@ export default function CheckoutPage() {
 
         try {
             // 1. Create Payment Intent (Mock)
-            const intentRes = await axios.post('http://localhost:3000/api/payment/create-intent', {
-                items: items,
-                total: cartTotal
-            });
+            // const intentRes = await axios.post('http://localhost:3000/api/payment/create-intent', { ... });
 
-            // 2. Confirm Payment (Mock delay)
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // 2. Mock Payment Delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
 
-            // 3. Create Order
-            // await axios.post('/api/orders', { ...orderData });
+            // 3. Create Order in DB
+            const token = localStorage.getItem('token');
+            const orderConfig = {
+                headers: { Authorization: `Bearer ${token}` }
+            };
+
+            const orderData = {
+                orderItems: items,
+                shippingAddress: {
+                    firstName: formData.firstName,
+                    lastName: formData.lastName,
+                    address: formData.address,
+                    city: formData.city,
+                    postalCode: formData.postalCode,
+                    country: formData.country,
+                },
+                paymentMethod: 'Card',
+                itemsPrice: cartTotal,
+                taxPrice: 0,
+                shippingPrice: 0,
+                totalPrice: cartTotal,
+            };
+
+            await axios.post('http://localhost:3000/api/orders', orderData, orderConfig);
 
             clearCart();
             setStep(3);
         } catch (error) {
-            console.error('Payment failed', error);
-            alert('Payment failed. Please try again.');
+            console.error('Payment/Order failed', error);
+            toast.error(`Order creation failed: ${error.response?.data?.message || error.message}`);
         } finally {
             setLoading(false);
-            // Clear cart on success (moved here for mock flow simplicity, ideally after success confirmation)
-            if (step === 2) {
-                // Wait, step logic is inside. We should clear only on success.
-            }
         }
     };
 

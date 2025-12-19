@@ -56,6 +56,9 @@ export default function Customizer() {
             // Set preview instead of applying directly
             if (response.data.config) {
                 setAiPreviewConfig(response.data.config);
+                if (response.data.config.isFallback) {
+                    alert("AI Service is currently busy. Showing a default template instead.");
+                }
             }
         } catch (error) {
             console.error("AI Generation Error:", error);
@@ -325,7 +328,8 @@ export default function Customizer() {
                                     name: `Custom ${selectedProduct.charAt(0).toUpperCase() + selectedProduct.slice(1)}`,
                                     price: 149.00,
                                     config: config,
-                                    productType: selectedProduct
+                                    productType: selectedProduct,
+                                    image: `/assets/${selectedProduct}-preview.png` // TODO: Use real screenshot if possible, or reliable placeholder assets
                                 });
                                 navigate('/checkout');
                             }}

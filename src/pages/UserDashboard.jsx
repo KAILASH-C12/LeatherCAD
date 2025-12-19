@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
 import { LayoutDashboard, ShoppingBag, Settings, LogOut, Plus, Search, ChevronRight, Edit, Download } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useUser } from '@clerk/clerk-react';
 import axios from 'axios';
+import OrdersPage from './OrdersPage';
+import SettingsPage from './SettingsPage';
 
 export default function UserDashboard() {
     const navigate = useNavigate();
+    const { user } = useUser();
     const [activeTab, setActiveTab] = useState('designs');
     const [designs, setDesigns] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -47,12 +51,16 @@ export default function UserDashboard() {
 
                 <div className="px-6 mb-6">
                     <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border border-border">
-                        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold">
-                            JD
+                        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold overflow-hidden">
+                            {user?.imageUrl ? (
+                                <img src={user.imageUrl} alt={user.fullName} className="w-full h-full object-cover" />
+                            ) : (
+                                <span>{user?.firstName?.charAt(0) || 'U'}</span>
+                            )}
                         </div>
                         <div className="overflow-hidden">
-                            <div className="font-medium text-sm truncate text-foreground">John Doe</div>
-                            <div className="text-xs text-muted-foreground truncate">Pro Plan</div>
+                            <div className="font-medium text-sm truncate text-foreground">{user?.fullName || 'User'}</div>
+                            <div className="text-xs text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</div>
                         </div>
                     </div>
                 </div>
@@ -173,6 +181,14 @@ export default function UserDashboard() {
                                 </div>
                             )}
                         </>
+                    ) : activeTab === 'orders' ? (
+                        <div className="h-full">
+                            <OrdersPage />
+                        </div>
+                    ) : activeTab === 'settings' ? (
+                        <div className="h-full">
+                            <SettingsPage />
+                        </div>
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border rounded-xl bg-secondary/10">
                             <ShoppingBag size={48} className="mb-4 opacity-20" />
