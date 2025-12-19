@@ -15,6 +15,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import Customizer from './pages/Customizer';
 import AdminDashboard from './pages/AdminDashboard';
 import DesignerDashboard from './pages/DesignerDashboard';
+import PaymentPortal from './pages/PaymentPortal';
 
 import { CartSidebar } from './components/cart/CartSidebar';
 
@@ -44,6 +45,7 @@ function App() {
                 <Route path="/customizer" element={<Customizer />} />
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/designer" element={<DesignerDashboard />} />
+                <Route path="/payment-portal" element={<PaymentPortal />} />
             </Routes>
         </Router>
     );

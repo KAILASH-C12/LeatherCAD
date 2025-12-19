@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { PenTool, Plus, LogOut, LayoutDashboard, Image as ImageIcon, Box, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function DesignerDashboard() {
     const navigate = useNavigate();
@@ -69,9 +69,11 @@ export default function DesignerDashboard() {
             {/* Sidebar */}
             <aside className="w-64 bg-card border-r border-border hidden md:flex flex-col">
                 <div className="p-6">
-                    <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground">
-                        LeatherCAD
-                    </h2>
+                    <Link to="/">
+                        <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground">
+                            LeatherCAD
+                        </h2>
+                    </Link>
                     <p className="text-xs text-muted-foreground tracking-widest uppercase mt-1">Designer Studio</p>
                 </div>
 

@@ -7,6 +7,7 @@ import productRoutes from './routes/products.js';
 import designRoutes from './routes/designs.js';
 import paymentRoutes from './routes/payment.js';
 import aiRoutes from './routes/ai.js';
+import cartRoutes from './routes/cart.js';
 
 dotenv.config();
 
@@ -53,6 +54,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/designs', designRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/cart', cartRoutes);
 
 app.get('/', (req, res) => {
     res.send('LeatherCAD API is running');

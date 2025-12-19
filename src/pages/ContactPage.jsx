@@ -1,11 +1,9 @@
 import { motion } from 'framer-motion';
-import Navbar from '../components/layout/Navbar';
 import { Mail, MapPin, Phone } from 'lucide-react';
 
 export default function ContactPage() {
     return (
         <div className="min-h-screen bg-background-dark text-white">
-            <Navbar />
 
             <div className="container mx-auto px-4 py-20">
                 <div className="grid md:grid-cols-2 gap-16">

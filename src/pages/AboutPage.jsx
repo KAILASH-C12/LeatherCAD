@@ -1,11 +1,9 @@
 import { motion } from 'framer-motion';
-import Navbar from '../components/layout/Navbar';
 import { Users, Globe, Award, Heart } from 'lucide-react';
 
 export default function AboutPage() {
     return (
         <div className="min-h-screen bg-background-dark text-white">
-            <Navbar />
 
             {/* Hero */}
             <section className="relative py-24 px-4 text-center overflow-hidden">

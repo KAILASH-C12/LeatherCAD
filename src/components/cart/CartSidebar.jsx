@@ -1,9 +1,10 @@
-
+import { useNavigate } from 'react-router-dom';
 import { X, Minus, Plus, Trash2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useCartStore } from '../../store/CartStore';
 
 export function CartSidebar() {
+    const navigate = useNavigate();
     const isOpen = useCartStore(state => state.isOpen);
     const items = useCartStore(state => state.items);
     const toggleCart = useCartStore(state => state.toggleCart);
@@ -79,7 +80,13 @@ export function CartSidebar() {
                         <span>Total</span>
                         <span>${total}</span>
                     </div>
-                    <Button className="w-full bg-primary text-primary-foreground">
+                    <Button
+                        className="w-full bg-primary text-primary-foreground"
+                        onClick={() => {
+                            toggleCart();
+                            navigate('/checkout');
+                        }}
+                    >
                         Checkout
                     </Button>
                 </div>

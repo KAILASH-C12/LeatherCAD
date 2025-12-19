@@ -1,15 +1,7 @@
-import Navbar from '../components/layout/Navbar';
-
-const articles = [
-    { title: "The Future of Digital Leather Patterning", cat: "Industry", date: "Oct 12, 2024", img: "https://images.unsplash.com/photo-1559563458-527698bf5295?auto=format&fit=crop&q=80&w=600" },
-    { title: "Sourcing Sustainable Leather Materials", cat: "Materials", date: "Sep 28, 2024", img: "https://images.unsplash.com/photo-1551216223-37c8d1dbec5c?auto=format&fit=crop&q=80&w=600" },
-    { title: "How 3D Customization Boosts Sales", cat: "Case Study", date: "Sep 15, 2024", img: "https://images.unsplash.com/photo-1605218427368-35b8686e06b3?auto=format&fit=crop&q=80&w=600" },
-];
 
 export default function BlogPage() {
     return (
         <div className="min-h-screen bg-background-dark text-white">
-            <Navbar />
             <div className="container mx-auto px-4 py-20">
                 <h1 className="text-4xl font-bold mb-12">Latest Insights</h1>
 

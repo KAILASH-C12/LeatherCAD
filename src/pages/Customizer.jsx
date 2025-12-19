@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import Product3DViewer from '../components/customizer/Product3DViewer';
-import { ArrowLeft, Share2, Download, Save, ShoppingCart, Layers, Palette, Sparkles, Loader2 } from 'lucide-react';
+import { ArrowLeft, Share2, Download, Save, ShoppingCart, Layers, Palette, Sparkles, Loader2, Shield } from 'lucide-react';
 import axios from 'axios';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../store/CartStore';
@@ -194,7 +194,12 @@ export default function Customizer() {
                     <Link to="/catalog" className="text-gray-500 hover:text-black transition-colors">
                         <ArrowLeft size={24} />
                     </Link>
-                    <h1 className="text-xl font-bold font-serif text-black">Design Studio</h1>
+                    <Link to="/" className="flex items-center gap-2">
+                        <Shield className="text-[#D4AF37]" size={28} />
+                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#D4AF37] to-[#AA8822]">
+                            LeatherCAD
+                        </span>
+                    </Link>
                     <div className="w-6"></div>
                 </div>
 
@@ -321,9 +326,10 @@ export default function Customizer() {
                         <button
                             onClick={() => {
                                 addItem({
-                                    id: Date.now(), // Unique ID for custom item
+                                    id: Date.now().toString(), // Unique ID for custom item
                                     name: `Custom ${selectedProduct.charAt(0).toUpperCase() + selectedProduct.slice(1)}`,
                                     price: 149.00,
+                                    image: `/assets/${selectedProduct}.jpg`, // Placeholder/Logic for dynamic image
                                     config: config,
                                     productType: selectedProduct
                                 });

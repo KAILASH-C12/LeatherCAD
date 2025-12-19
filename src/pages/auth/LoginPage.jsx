@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { User, Shield, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
 import useAuthStore from '../../store/AuthStore';
 
@@ -51,9 +51,11 @@ export default function LoginPage() {
             <div className="w-full max-w-md">
                 {/* Logo or Brand */}
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground mb-2">
-                        LeatherCAD
-                    </h1>
+                    <Link to="/">
+                        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground mb-2">
+                            LeatherCAD
+                        </h1>
+                    </Link>
                     <p className="text-muted-foreground">Sign in to your account</p>
                 </div>
 

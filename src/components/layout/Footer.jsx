@@ -29,7 +29,9 @@ export default function Footer() {
                     </ul>
                 </div>
                 <div className="col-span-2 md:col-span-1">
-                    <h4 className="font-bold text-white mb-4">LeatherCAD</h4>
+                    <Link to="/" className="hover:opacity-80 transition-opacity">
+                        <h4 className="font-bold text-white mb-4">LeatherCAD</h4>
+                    </Link>
                     <p className="text-gray-400 text-xs leading-relaxed">
                         The world's most advanced 3D leather configurator for artisans and brands. Design, visualize, and craft perfection.
                     </p>

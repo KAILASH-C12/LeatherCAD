@@ -39,9 +39,11 @@ export default function UserDashboard() {
             {/* Sidebar */}
             <aside className="w-64 bg-card border-r border-border hidden md:flex flex-col">
                 <div className="p-6">
-                    <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground">
-                        LeatherCAD
-                    </h2>
+                    <Link to="/">
+                        <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground">
+                            LeatherCAD
+                        </h2>
+                    </Link>
                     <p className="text-xs text-muted-foreground tracking-widest uppercase mt-1">Designer Hub</p>
                 </div>
 
