@@ -137,23 +137,27 @@ export default function CheckoutPage() {
                             <button type="submit" className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium mt-4">Continue to Payment</button>
                         </form>
                     ) : (
-                        <form onSubmit={handlePaymentSubmit} className="space-y-4">
+                        <div className="space-y-6">
                             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
                                 <CreditCard size={20} /> Payment Method
                             </h2>
-                            <div className="p-4 border border-primary/30 bg-primary/5 rounded-xl mb-4 text-sm text-primary">
-                                Mock Mode: No real charge will be made.
+                            <div className="bg-primary/5 border border-primary/20 p-4 rounded-xl">
+                                <p className="text-sm text-gray-300 mb-2">Shipping to:</p>
+                                <p className="font-bold">{formData.address}, {formData.city}, {formData.postalCode}</p>
                             </div>
-                            <input type="text" name="cardNumber" placeholder="Card Number" className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
-                            <div className="grid grid-cols-2 gap-4">
-                                <input type="text" name="expiry" placeholder="MM/YY" className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
-                                <input type="text" name="cvc" placeholder="CVC" className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
-                            </div>
-                            <button type="submit" disabled={loading} className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium mt-4 flex items-center justify-center gap-2">
-                                {loading ? <Loader2 className="animate-spin" /> : `Pay $${cartTotal.toFixed(2)}`}
+
+                            <p className="text-gray-400 text-sm">
+                                You will be redirected to our secure payment gateway to complete your purchase using UPI, Card, or NetBanking.
+                            </p>
+
+                            <button
+                                onClick={() => window.open('/payment-portal', '_blank')}
+                                className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg hover:brightness-110 transition-all shadow-lg shadow-primary/25"
+                            >
+                                Proceed to Payment
                             </button>
-                            <button type="button" onClick={() => setStep(1)} className="w-full py-3 text-muted-foreground hover:text-foreground">Back to Shipping</button>
-                        </form>
+                            <button onClick={() => setStep(1)} className="w-full py-3 text-muted-foreground hover:text-foreground">Back to Shipping</button>
+                        </div>
                     )}
                 </div>
 

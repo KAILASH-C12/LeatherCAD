@@ -52,7 +52,9 @@ export default function Login({ role = 'designer' }) {
                     <div className="w-16 h-16 bg-md-orange-100 rounded-2xl mx-auto mb-4 bg-[#FDE68A]/20 border border-orange-200 flex items-center justify-center">
                         <span className="text-2xl font-bold text-primary">LC</span>
                     </div>
-                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">LeatherCAD</h2>
+                    <Link to="/">
+                        <h2 className="text-3xl font-bold text-gray-900 tracking-tight hover:text-primary transition-colors">LeatherCAD</h2>
+                    </Link>
                     <p className="text-gray-500 mt-2">Welcome back, {role === 'admin' ? 'Administrator' : 'Designer'}!</p>
                 </div>
 

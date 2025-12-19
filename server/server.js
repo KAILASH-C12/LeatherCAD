@@ -9,6 +9,7 @@ import paymentRoutes from './routes/payment.js';
 import aiRoutes from './routes/ai.js';
 import orderRoutes from './routes/orders.js';
 import projectRoutes from './routes/projects.js';
+import cartRoutes from './routes/cart.js';
 
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -27,11 +28,7 @@ if (process.env.NODE_ENV !== 'production') {
     app.use(morgan('dev'));
 }
 
-app.use(helmet());
-app.use(express.json());
-if (process.env.NODE_ENV !== 'production') {
-    app.use(morgan('dev'));
-}
+
 
 // Rate Limiting
 const limiter = rateLimit({
@@ -84,6 +81,7 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/cart', cartRoutes);
 
 app.get('/', (req, res) => {
     res.send('LeatherCAD API is running');

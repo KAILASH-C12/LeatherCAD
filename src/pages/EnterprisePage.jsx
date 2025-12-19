@@ -1,10 +1,8 @@
-import Navbar from '../components/layout/Navbar';
 import { Shield, Zap, Server, BarChart } from 'lucide-react';
 
 export default function EnterprisePage() {
     return (
         <div className="min-h-screen bg-background-dark text-white">
-            <Navbar />
 
             <div className="container mx-auto px-4 py-24 text-center">
                 <h1 className="text-5xl md:text-7xl font-bold mb-8">

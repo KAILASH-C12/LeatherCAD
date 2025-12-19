@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Package, Layers, Users, Plus, Edit, Trash2, Search, Settings, LogOut, LayoutDashboard, ChevronRight, ShoppingBag, Clock, CheckCircle, XCircle, FolderKanban } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import axios from 'axios';
 
@@ -125,9 +125,11 @@ export default function AdminDashboard() {
             {/* Sidebar code remains same but navItems updated */}
             <aside className="w-64 bg-card border-r border-border hidden md:flex flex-col">
                 <div className="p-6">
-                    <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground">
-                        LeatherCAD
-                    </h2>
+                    <Link to="/">
+                        <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-foreground">
+                            LeatherCAD
+                        </h2>
+                    </Link>
                     <p className="text-xs text-muted-foreground tracking-widest uppercase mt-1">Admin Panel</p>
                 </div>
 

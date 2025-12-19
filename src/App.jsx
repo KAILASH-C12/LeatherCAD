@@ -21,6 +21,7 @@ import OrdersPage from './pages/OrdersPage';
 import Customizer from './pages/Customizer';
 import AdminDashboard from './pages/AdminDashboard';
 import DesignerDashboard from './pages/DesignerDashboard';
+import PaymentPortal from './pages/PaymentPortal';
 
 import { CartSidebar } from './components/cart/CartSidebar';
 import { SignedIn, SignedOut, RedirectToSignIn, useUser } from '@clerk/clerk-react';
@@ -85,12 +86,12 @@ function App() {
                 } />
 
                 <Route path="/designer" element={<DesignerDashboard />} />
-
                 <Route path="/orders" element={
                     <SignedIn>
                         <Layout><OrdersPage /></Layout>
                     </SignedIn>
                 } />
+                <Route path="/payment-portal" element={<PaymentPortal />} />
             </Routes>
             <Toaster position="top-center" richColors />
         </Router>
