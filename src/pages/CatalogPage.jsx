@@ -23,6 +23,7 @@ const products = [
 
 export default function CatalogPage() {
     const [selectedCategory, setSelectedCategory] = useState("All");
+    const [searchQuery, setSearchQuery] = useState("");
     const addItem = useCartStore(state => state.addItem);
     const toggleCart = useCartStore(state => state.toggleCart);
     const isOpen = useCartStore(state => state.isOpen);
@@ -47,17 +48,21 @@ export default function CatalogPage() {
     };
 
     // Filter logic
-    const filteredProducts = selectedCategory === "All"
-        ? products
-        : products.filter(p => p.category === selectedCategory);
+    const filteredProducts = products.filter(p => {
+        const matchesCategory = selectedCategory === "All" || p.category === selectedCategory;
+        const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (p.tag && p.tag.toLowerCase().includes(searchQuery.toLowerCase()));
+        return matchesCategory && matchesSearch;
+    });
 
     return (
-        <div className="min-h-screen bg-transparent text-gray-100 font-sans">
+        <div className="min-h-screen bg-transparent text-black font-sans">
             {/* Header */}
             <header className="bg-background-card border-b border-white/10 py-12">
                 <div className="container mx-auto px-4 text-center">
                     <h1 className="text-4xl md:text-5xl font-bold mb-4 font-display">Designed for Life</h1>
-                    <p className="text-xl text-gray-400 max-w-2xl mx-auto font-light">
+                    <p className="text-xl text-gray-600 max-w-2xl mx-auto font-light">
                         Explore our collection of premium, hand-crafted leather goods. Customize any piece to make it uniquely yours.
                     </p>
                 </div>
@@ -81,6 +86,8 @@ export default function CatalogPage() {
                     <input
                         type="text"
                         placeholder="Search products..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full bg-background-card border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-primary"
                     />
                 </div>

@@ -61,7 +61,7 @@ export default function NewHeroSection() {
 
                         {/* CTA Buttons - white primary button */}
                         <div className="flex flex-wrap gap-4">
-                            <Link to="/customize" className="no-underline">
+                            <Link to="/customizer" className="no-underline">
                                 <Button
                                     size="lg"
                                     className="bg-white text-black hover:bg-white/90 transition-all hover:scale-105 group px-8 shadow-lg shadow-white/10"

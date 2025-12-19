@@ -203,12 +203,11 @@ export default function Customizer() {
 
                 {/* AI Design Generator */}
                 <div className="px-6 py-4 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-100">
+                    {/* ... existing AI code ... */}
                     <h3 className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-2 flex items-center gap-1">
                         <Sparkles size={14} /> Smart Designer
                     </h3>
-
-                    {/* API Key Input Removed as requested */}
-
+                    {/* ... (rest of AI section is fine, skipping context to focus on insertions) ... */}
                     <div className="flex gap-2">
                         <input
                             type="text"
@@ -225,10 +224,10 @@ export default function Customizer() {
                             {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
                         </button>
                     </div>
-
-                    {/* AI Preview Box */}
+                    {/* ... AI Preview Box code ... */}
                     {aiPreviewConfig && (
                         <div className="mt-3 bg-white border border-purple-100 rounded-lg p-3 shadow-sm animate-in fade-in slide-in-from-top-2">
+                            {/* ... */}
                             <h4 className="text-xs font-semibold text-gray-700 mb-2">AI Suggestion Preview</h4>
                             <div className="flex gap-2 mb-3">
                                 {Object.entries(aiPreviewConfig).slice(0, 3).map(([key, color]) => (
@@ -240,7 +239,11 @@ export default function Customizer() {
                             </div>
                             <div className="flex gap-2">
                                 <button
-                                    onClick={applyAiPreview}
+                                    // onClick={applyAiPreview} // Assuming this function exists or will be added, keeping placeholder logic safe
+                                    onClick={() => {
+                                        setConfig(prev => ({ ...prev, ...aiPreviewConfig }));
+                                        setAiPreviewConfig(null);
+                                    }}
                                     className="flex-1 bg-purple-600 text-white text-xs py-1.5 rounded hover:bg-purple-700 font-medium"
                                 >
                                     Apply Design
@@ -258,6 +261,32 @@ export default function Customizer() {
 
                 {/* Configuration Area */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                    {/* Product Switcher */}
+                    <div>
+                        <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <Layers size={16} /> Product Type
+                        </h3>
+                        <div className="grid grid-cols-3 gap-2">
+                            {['bag', 'jacket', 'boots', 'wallet', 'belt'].map(type => (
+                                <button
+                                    key={type}
+                                    onClick={() => {
+                                        setSelectedProduct(type);
+                                        // Reset active part to first part of new product
+                                        const newParts = PRODUCT_PARTS[type] || PRODUCT_PARTS['bag'];
+                                        setActivePart(newParts[0]);
+                                    }}
+                                    className={`px-3 py-2 rounded-lg text-sm font-medium capitalize transition-all border ${selectedProduct === type
+                                            ? 'bg-black text-white border-black shadow-md'
+                                            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    {type}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* Part Selector */}
                     <div>
                         <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -279,17 +308,17 @@ export default function Customizer() {
                         </div>
                     </div>
 
-                    {/* Color Picker */}
+                    {/* Color Picker - Compact Grid */}
                     <div>
                         <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                             <Palette size={16} /> Choose Material
                         </h3>
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-6 gap-3">
                             {(activePart === 'hardware' ? hardwareColors : colors).map((color) => (
                                 <button
                                     key={color.value}
                                     onClick={() => handleColorChange(color.value)}
-                                    className={`group relative aspect-square rounded-full transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black ${config[activePart] === color.value ? 'ring-2 ring-black ring-offset-2 scale-110' : ''
+                                    className={`group relative w-full aspect-square rounded-full transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black ${config[activePart] === color.value ? 'ring-2 ring-black ring-offset-2 scale-110' : ''
                                         }`}
                                     title={color.name}
                                 >
@@ -299,7 +328,7 @@ export default function Customizer() {
                                     />
                                     {config[activePart] === color.value && (
                                         <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="w-2 h-2 bg-white rounded-full shadow-sm" />
+                                            <div className="w-1.5 h-1.5 bg-white rounded-full shadow-sm" />
                                         </div>
                                     )}
                                 </button>
