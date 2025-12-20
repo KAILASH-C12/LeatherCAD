@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { PenTool, Plus, LogOut, LayoutDashboard, Image as ImageIcon, Box, ChevronRight } from 'lucide-react';
+import { PenTool, Plus, LogOut, LayoutDashboard, Image as ImageIcon, Box, ChevronRight, ShoppingBag } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+import OrdersPage from './OrdersPage';
 
 export default function DesignerDashboard() {
     const navigate = useNavigate();
@@ -60,6 +62,7 @@ export default function DesignerDashboard() {
     const navItems = [
         { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
         { id: 'designs', label: 'My Designs', icon: PenTool },
+        { id: 'orders', label: 'My Orders', icon: ShoppingBag }, // Added Orders
         { id: 'assets', label: 'Assets', icon: ImageIcon },
         { id: 'prototypes', label: '3D Prototypes', icon: Box },
     ];
@@ -174,6 +177,10 @@ export default function DesignerDashboard() {
                                     </div>
                                 ))}
                             </div>
+                        </div>
+                    ) : activeTab === 'orders' ? (
+                        <div className="h-full">
+                            <OrdersPage />
                         </div>
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-border rounded-xl bg-secondary/10">

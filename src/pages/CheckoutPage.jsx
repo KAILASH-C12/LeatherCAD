@@ -4,12 +4,10 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-import { useAuth } from '@clerk/clerk-react';
+
 import { useCartStore } from '../store/CartStore';
 
 export default function CheckoutPage() {
-    const navigate = useNavigate();
-    const { getToken } = useAuth();
     const [step, setStep] = useState(1); // 1: Info, 2: Payment, 3: Success
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -42,20 +40,30 @@ export default function CheckoutPage() {
         setLoading(true);
 
         try {
-            // 1. Create Payment Intent (Mock)
-            // const intentRes = await axios.post('http://localhost:3000/api/payment/create-intent', { ... });
-
             // 2. Mock Payment Delay
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             // 3. Create Order in DB
-            const token = await getToken();
+            const token = localStorage.getItem('token');
+            if (!token) {
+                toast.error("Please login to complete your order");
+                navigate('/login');
+                return;
+            }
+
             const orderConfig = {
                 headers: { Authorization: `Bearer ${token}` }
             };
 
             const orderData = {
-                orderItems: items,
+                orderItems: items.map(item => ({
+                    name: item.product,
+                    qty: item.quantity,
+                    image: item.image,
+                    price: item.price,
+                    product: item.id.length === 24 ? item.id : undefined, // Assuming non-mongo ID is custom
+                    config: item.config // Map of config options
+                })),
                 shippingAddress: {
                     firstName: formData.firstName,
                     lastName: formData.lastName,
@@ -77,7 +85,7 @@ export default function CheckoutPage() {
             setStep(3);
         } catch (error) {
             console.error('Payment/Order failed', error);
-            toast.error(`Order creation failed: ${error.response?.data?.message || error.message}`);
+            toast.error(`Order creation failed: ${error.response?.data?.message || 'Something went wrong'}`);
         } finally {
             setLoading(false);
         }

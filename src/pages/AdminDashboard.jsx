@@ -7,7 +7,7 @@ import axios from 'axios';
 export default function AdminDashboard() {
     const navigate = useNavigate();
     const { user } = useUser();
-    const { getToken } = useAuth();
+    // const { getToken } = useAuth(); // Removed Clerk getToken
     const [activeTab, setActiveTab] = useState('dashboard');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -23,7 +23,7 @@ export default function AdminDashboard() {
 
     const fetchOrders = async () => {
         try {
-            const token = await getToken();
+            const token = localStorage.getItem('token');
             const response = await axios.get('http://localhost:3000/api/orders', {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -62,7 +62,7 @@ export default function AdminDashboard() {
 
     const fetchProjects = async () => {
         try {
-            const token = await getToken();
+            const token = localStorage.getItem('token');
             const response = await axios.get('http://localhost:3000/api/projects', {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -75,7 +75,7 @@ export default function AdminDashboard() {
     const handleCreateProject = async (e) => {
         e.preventDefault();
         try {
-            const token = await getToken();
+            const token = localStorage.getItem('token');
             await axios.post('http://localhost:3000/api/projects', newProject, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
 
     const fetchDesigns = async () => {
         try {
-            const token = await getToken();
+            const token = localStorage.getItem('token');
             const response = await axios.get('http://localhost:3000/api/designs', {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -112,7 +112,7 @@ export default function AdminDashboard() {
 
     const handleUpdateStatus = async (id, status) => {
         try {
-            const token = await getToken();
+            const token = localStorage.getItem('token');
             await axios.put(`http://localhost:3000/api/designs/${id}/status`,
                 { status },
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -134,9 +134,22 @@ export default function AdminDashboard() {
         { id: 'settings', label: 'Settings', icon: Settings },
     ];
 
+    const handleDeliver = async (id) => {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.put(`http://localhost:3000/api/orders/${id}/deliver`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchOrders();
+        } catch (error) {
+            console.error('Error delivering order:', error);
+        }
+    };
+
+    // ... inside render ...
     return (
         <div className="flex h-screen bg-background overflow-hidden">
-            {/* Sidebar code remains same but navItems updated */}
+            {/* ... sidebar ... */}
             <aside className="w-64 bg-card border-r border-border hidden md:flex flex-col">
                 <div className="p-6">
                     <Link to="/">
@@ -232,8 +245,49 @@ export default function AdminDashboard() {
                             )}
                         </div>
                     ) : activeTab === 'products' ? (
-                        <div className="content-products">
-                            <h1 className="text-2xl font-bold">Products (Placeholder)</h1>
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center">
+                                <h1 className="text-2xl font-bold text-foreground">Products Management</h1>
+                            </div>
+
+                            {/* Products List */}
+                            <div className="bg-card border border-border rounded-xl overflow-hidden">
+                                <table className="w-full text-left text-sm">
+                                    <thead className="bg-muted text-muted-foreground border-b border-border">
+                                        <tr>
+                                            <th className="p-4 font-medium">Image</th>
+                                            <th className="p-4 font-medium">Name</th>
+                                            <th className="p-4 font-medium">Category</th>
+                                            <th className="p-4 font-medium">Base Price</th>
+                                            <th className="p-4 font-medium">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border">
+                                        {products.map((product) => (
+                                            <tr key={product._id} className="hover:bg-muted/50 transition-colors">
+                                                <td className="p-4">
+                                                    <div className="w-12 h-12 rounded bg-secondary overflow-hidden">
+                                                        <img src={product.thumbnailUrl} alt={product.name} className="w-full h-full object-cover" />
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 font-medium">{product.name}</td>
+                                                <td className="p-4 capitalize">{product.category}</td>
+                                                <td className="p-4">${product.price_base}</td>
+                                                <td className="p-4">
+                                                    <div className="flex gap-2">
+                                                        <button className="p-2 hover:bg-secondary rounded-lg text-muted-foreground hover:text-foreground">
+                                                            <Edit size={16} />
+                                                        </button>
+                                                        <button className="p-2 hover:bg-destructive/10 rounded-lg text-destructive">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     ) : activeTab === 'projects' ? (
                         <div className="space-y-6">
@@ -309,6 +363,7 @@ export default function AdminDashboard() {
                                             <th className="p-4 font-medium">Total</th>
                                             <th className="p-4 font-medium">Paid</th>
                                             <th className="p-4 font-medium">Status</th>
+                                            <th className="p-4 font-medium">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-border">
@@ -326,11 +381,21 @@ export default function AdminDashboard() {
                                                         {order.isDelivered ? 'Delivered' : 'Processing'}
                                                     </span>
                                                 </td>
+                                                <td className="p-4">
+                                                    {!order.isDelivered && (
+                                                        <button
+                                                            onClick={() => handleDeliver(order._id)}
+                                                            className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded hover:opacity-90"
+                                                        >
+                                                            Mark Delivered
+                                                        </button>
+                                                    )}
+                                                </td>
                                             </tr>
                                         ))}
                                         {orders.length === 0 && (
                                             <tr>
-                                                <td colSpan="6" className="p-8 text-center text-muted-foreground">No orders found.</td>
+                                                <td colSpan="7" className="p-8 text-center text-muted-foreground">No orders found.</td>
                                             </tr>
                                         )}
                                     </tbody>

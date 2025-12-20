@@ -1,6 +1,6 @@
 import express from 'express';
 import Project from '../models/Project.js';
-import { protect, admin } from '../middleware/authMiddleware.js';
+import { protect, adminOnly as admin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 

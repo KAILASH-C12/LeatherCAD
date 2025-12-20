@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Stage, Environment, ContactShadows, Float, useTexture, PresentationControls, RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
 import { AlertTriangle, ShoppingBag, Shirt, Footprints, Layers } from 'lucide-react';
@@ -291,7 +291,21 @@ function FallbackPreview({ productType, config }) {
     );
 }
 
-export default function Product3DViewer({ productType, config, zoom = 1, rotation = 0, onPartClick }) {
+function ScreenshotHandler({ captureRef }) {
+    const { gl } = useThree();
+
+    useEffect(() => {
+        if (captureRef) {
+            captureRef.current = () => {
+                return gl.domElement.toDataURL('image/png');
+            };
+        }
+    }, [gl, captureRef]);
+
+    return null;
+}
+
+export default function Product3DViewer({ productType, config, zoom = 1, rotation = 0, onPartClick, captureRef }) {
     const [animationPhase, setAnimationPhase] = useState(0)
     const [currentProduct, setCurrentProduct] = useState(productType)
     const [isTransitioning, setIsTransitioning] = useState(false)
@@ -328,6 +342,7 @@ export default function Product3DViewer({ productType, config, zoom = 1, rotatio
         <div className="w-full h-full relative bg-gradient-to-b from-gray-50 to-gray-200">
             <WebGLErrorBoundary fallback={<FallbackPreview productType={productType} config={config} />}>
                 <Canvas shadows camera={{ position: [0, 0, 4.5], fov: 42 }} dpr={[1, 2]} gl={{ preserveDrawingBuffer: true, alpha: true }}>
+                    <ScreenshotHandler captureRef={captureRef} />
                     <ambientLight intensity={0.5} />
                     <spotLight position={[8, 8, 8]} angle={0.18} penumbra={1} intensity={1.4} castShadow />
 

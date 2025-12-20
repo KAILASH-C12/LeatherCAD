@@ -167,36 +167,34 @@ router.put('/resetpassword/:resettoken', async (req, res) => {
 // @desc    Google Login
 // @route   POST /api/auth/google
 router.post('/google', async (req, res) => {
-    const { email, name, googleId } = req.body; // In real app, verify ID token here
+    const { email, name, googleId } = req.body;
 
     try {
         let user = await User.findOne({ email });
-
         if (user) {
-            // If user exists, link googleId if not present (optional logic)
             if (!user.googleId) {
                 user.googleId = googleId;
                 await user.save();
             }
         } else {
-            // Create new user
             user = await User.create({
                 name,
                 email,
-                password: Date.now().toString(), // Dummy password for oauth users
+                password: Date.now().toString(),
                 role: 'designer',
-                googleId
+                googleId,
             });
         }
-
         res.status(200).json({
             _id: user._id,
             name: user.name,
             email: user.email,
             role: user.role,
-            token: generateToken(user._id)
+            token: generateToken(user._id),
         });
-
+    } catch (error) {
+        // This catch block was missing
+        res.status(500).json({ message: error.message });
     }
 });
 

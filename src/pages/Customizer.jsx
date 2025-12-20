@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Product3DViewer from '../components/customizer/Product3DViewer';
 import { ArrowLeft, Share2, Download, Save, ShoppingCart, Layers, Palette, Sparkles, Loader2, Shield } from 'lucide-react';
 import axios from 'axios';
@@ -8,12 +8,13 @@ import { useCartStore } from '../store/CartStore';
 import { useAuth } from '@clerk/clerk-react';
 
 export default function Customizer() {
-    // Hook for URL params
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { getToken } = useAuth();
     const addItem = useCartStore(state => state.addItem);
     const productFromUrl = searchParams.get('product') || 'bag';
+
+    const captureRef = useRef(null);
 
     const [selectedProduct, setSelectedProduct] = useState(productFromUrl);
     const [activePart, setActivePart] = useState('body');
@@ -363,10 +364,9 @@ export default function Customizer() {
                                     id: Date.now().toString(), // Unique ID for custom item
                                     name: `Custom ${selectedProduct.charAt(0).toUpperCase() + selectedProduct.slice(1)}`,
                                     price: 149.00,
-                                    image: `/assets/${selectedProduct}.jpg`, // Placeholder/Logic for dynamic image
+                                    image: captureRef.current ? captureRef.current() : `/assets/${selectedProduct}.jpg`,
                                     config: config,
-                                    productType: selectedProduct,
-                                    image: `/assets/${selectedProduct}-preview.png` // TODO: Use real screenshot if possible, or reliable placeholder assets
+                                    productType: selectedProduct
                                 });
                                 navigate('/checkout');
                             }}
@@ -424,6 +424,7 @@ export default function Customizer() {
                     config={config}
                     zoom={zoom}
                     onPartClick={setActivePart}
+                    captureRef={captureRef}
                 />
             </div>
         </div>
