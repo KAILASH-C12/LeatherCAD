@@ -3,11 +3,13 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "../ui/button"
 import { Link } from "react-router-dom"
 
+import deanJacketImg from "../../assets/dean_jacket.png"
+
 const products = [
     {
         name: "Dean Biker Jacket",
         category: "Jackets",
-        image: "https://images.unsplash.com/photo-1551028919-ac7fa7ea47ea?auto=format&fit=crop&q=80&w=600",
+        image: deanJacketImg,
         slug: "jacket",
         price: "$899",
     },
