@@ -7,24 +7,24 @@ import axios from 'axios';
 
 import { useCartStore } from '../store/CartStore';
 
+import { useAuth } from '@clerk/clerk-react';
+
 export default function CheckoutPage() {
+    const { getToken } = useAuth();
     const [step, setStep] = useState(1); // 1: Info, 2: Payment, 3: Success
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const { items, clearCart, getTotal } = useCartStore();
+    const cartTotal = getTotal();
+
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
         address: '',
         city: '',
         postalCode: '',
-        country: 'US',
-        cardNumber: '',
-        expiry: '',
-        cvc: ''
+        country: 'India' // Default
     });
-
-    // Real cart items
-    const { items, getTotal, clearCart } = useCartStore();
-    const cartTotal = getTotal();
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -35,6 +35,7 @@ export default function CheckoutPage() {
         setStep(2);
     };
 
+    // Payment Handler
     const handlePaymentSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -44,7 +45,7 @@ export default function CheckoutPage() {
             await new Promise(resolve => setTimeout(resolve, 1500));
 
             // 3. Create Order in DB
-            const token = localStorage.getItem('token');
+            const token = await getToken();
             if (!token) {
                 toast.error("Please login to complete your order");
                 navigate('/login');
@@ -57,12 +58,12 @@ export default function CheckoutPage() {
 
             const orderData = {
                 orderItems: items.map(item => ({
-                    name: item.product,
+                    name: item.name || 'Custom Item',
                     qty: item.quantity,
-                    image: item.image,
+                    image: item.image || 'https://placehold.co/100x100?text=No+Image',
                     price: item.price,
-                    product: item.id.length === 24 ? item.id : undefined, // Assuming non-mongo ID is custom
-                    config: item.config // Map of config options
+                    product: (item.id && item.id.length === 24) ? item.id : undefined,
+                    config: item.config || {}
                 })),
                 shippingAddress: {
                     firstName: formData.firstName,
@@ -136,13 +137,13 @@ export default function CheckoutPage() {
                                 <Truck size={20} /> Shipping Details
                             </h2>
                             <div className="grid grid-cols-2 gap-4">
-                                <input type="text" name="firstName" placeholder="First Name" required className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
-                                <input type="text" name="lastName" placeholder="Last Name" required className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
+                                <input type="text" name="firstName" value={formData.firstName} placeholder="First Name" required className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
+                                <input type="text" name="lastName" value={formData.lastName} placeholder="Last Name" required className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
                             </div>
-                            <input type="text" name="address" placeholder="Address" required className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
+                            <input type="text" name="address" value={formData.address} placeholder="Address" required className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
                             <div className="grid grid-cols-2 gap-4">
-                                <input type="text" name="city" placeholder="City" required className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
-                                <input type="text" name="postalCode" placeholder="Postal Code" required className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
+                                <input type="text" name="city" value={formData.city} placeholder="City" required className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
+                                <input type="text" name="postalCode" value={formData.postalCode} placeholder="Postal Code" required className="p-3 rounded-lg bg-white border border-gray-300 w-full text-black placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent" onChange={handleChange} />
                             </div>
                             <button type="submit" className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-medium mt-4">Continue to Payment</button>
                         </form>
@@ -161,10 +162,12 @@ export default function CheckoutPage() {
                             </p>
 
                             <button
-                                onClick={() => window.open('/payment-portal', '_blank')}
-                                className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg hover:brightness-110 transition-all shadow-lg shadow-primary/25"
+                                onClick={handlePaymentSubmit}
+                                disabled={loading}
+                                className="w-full py-4 bg-primary text-primary-foreground rounded-xl font-bold text-lg hover:brightness-110 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
                             >
-                                Proceed to Payment
+                                {loading && <Loader2 className="animate-spin" size={20} />}
+                                {loading ? 'Processing Payment...' : 'Pay & Complete Order'}
                             </button>
                             <button onClick={() => setStep(1)} className="w-full py-3 text-muted-foreground hover:text-foreground">Back to Shipping</button>
                         </div>

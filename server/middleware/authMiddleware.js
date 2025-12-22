@@ -10,6 +10,28 @@ export const protect = async (req, res, next) => {
     ) {
         try {
             token = req.headers.authorization.split(' ')[1];
+
+            // DEV TOKEN (admin bypass) - Requested Static Token
+            if (token === 'dev-admin-token') {
+                req.user = {
+                    _id: 'dev_admin_id',
+                    name: 'Kailash',
+                    email: 'kailash@example.com',
+                    role: 'admin'
+                };
+                return next();
+            }
+
+            // DEV TOKEN BYPASS (Old logic)
+            if (token.startsWith('DEV_TOKEN_')) {
+                const email = token.replace('DEV_TOKEN_', '');
+                const user = await User.findOne({ email });
+                if (user) {
+                    req.user = user;
+                    return next();
+                }
+            }
+
             const decoded = jwt.decode(token);
 
             if (!decoded) {

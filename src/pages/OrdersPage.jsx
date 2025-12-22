@@ -2,18 +2,18 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Package, Calendar, ChevronRight, Loader2, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import useAuthStore from '../store/AuthStore';
-import { toast } from 'sonner';
+import { useAuth } from '@clerk/clerk-react';
 
 export default function OrdersPage() {
-    const { token, isAuthenticated } = useAuthStore();
+    const { getToken, isLoaded, isSignedIn } = useAuth();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchOrders = async () => {
-            if (!isAuthenticated) return;
+            if (!isLoaded || !isSignedIn) return;
             try {
+                const token = await getToken();
                 const config = {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -30,7 +30,7 @@ export default function OrdersPage() {
         };
 
         fetchOrders();
-    }, [token, isAuthenticated]);
+    }, [isLoaded, isSignedIn, getToken]);
 
     if (loading) {
         return (
