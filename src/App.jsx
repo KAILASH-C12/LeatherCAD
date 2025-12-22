@@ -37,7 +37,7 @@ const RequireAdmin = ({ children }) => {
 
 function App() {
     return (
-        <Router>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <CartSidebar />
             <Routes>
                 <Route path="/" element={<LandingPage />} />

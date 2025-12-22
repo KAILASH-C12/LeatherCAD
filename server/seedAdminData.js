@@ -14,26 +14,29 @@ mongoose.connect(process.env.MONGO_URI, {
 
 const seedAdminData = async () => {
     try {
-        // Find existing users or create dummies
-        let designer = await User.findOne({ email: 'designer@example.com' });
-        if (!designer) {
-            designer = await User.create({
-                name: 'Jane Designer',
-                email: 'designer@example.com',
-                password: 'password123',
-                role: 'designer'
-            });
+        console.log('Seeding started...');
+
+        // 1. Seed Users (Kailash, Siddhant, Varsha)
+        const usersToSeed = [
+            { name: 'Kailash', email: 'kailash@example.com', password: 'password123', role: 'admin' },
+            { name: 'Siddhant', email: 'siddhant@example.com', password: 'password123', role: 'designer' },
+            { name: 'Varsha', email: 'varsha@example.com', password: 'password123', role: 'user' },
+            { name: 'Jane Designer', email: 'designer@example.com', password: 'password123', role: 'designer' }
+        ];
+
+        const users = [];
+        for (const u of usersToSeed) {
+            let user = await User.findOne({ email: u.email });
+            if (!user) {
+                user = await User.create(u);
+                console.log(`Created user: ${u.name}`);
+            } else {
+                console.log(`User exists: ${u.name}`);
+            }
+            users.push(user);
         }
 
-        // 1. Seed Projects
-        await Project.deleteMany({});
-        const projects = [
-            { name: 'Fall 2025 Collection', description: 'Leather jackets and boots for the upcoming season', status: 'active', createdBy: designer._id },
-            { name: 'Custom Client: Tesla', description: 'Bespoke leather seats for Model S Plaid', status: 'active', createdBy: designer._id },
-            { name: 'Archive: Summer 2024', description: 'Past summer collection designs', status: 'archived', createdBy: designer._id }
-        ];
-        await Project.insertMany(projects);
-        console.log('Seeded Projects');
+        const [kailash, siddhant, varsha, jane] = users;
 
         // Fetch real products
         const dbProducts = await Product.find({});
@@ -41,94 +44,104 @@ const seedAdminData = async () => {
             console.log('No products found, please run seedProducts.js first');
             process.exit(1);
         }
+        const p1 = dbProducts[0];
+        const p2 = dbProducts.length > 1 ? dbProducts[1] : dbProducts[0];
 
-        const product1 = dbProducts[0]._id;
-        const product2 = dbProducts.length > 1 ? dbProducts[1]._id : dbProducts[0]._id;
+        // 2. Seed Projects
+        await Project.deleteMany({});
+        const projects = [
+            { name: 'Leather Jacket 2025', description: 'Advanced biker jacket with smart heating.', status: 'active', createdBy: siddhant._id },
+            { name: 'Luxury Handbag', description: 'Gold-plated hardware collection.', status: 'active', createdBy: siddhant._id },
+            { name: 'Tesla Interior Custom', description: 'Vegan leather seat covers.', status: 'review', createdBy: kailash._id },
+            { name: 'Winter Boots Archive', description: 'Last year\'s bestsellers.', status: 'archived', createdBy: jane._id }
+        ];
+        await Project.insertMany(projects);
+        console.log(`Seeded ${projects.length} Projects`);
 
-        // 2. Seed Orders
+        // 3. Seed Orders (Historical Data for Charts)
         await Order.deleteMany({});
-        const orders = [
-            {
-                user: designer._id,
+        const orders = [];
+        const statuses = ['Processing', 'Shipped', 'Delivered'];
+
+        // Helper to create random order
+        const createOrder = (user, product, daysAgo, isPaid = true) => {
+            const date = new Date();
+            date.setDate(date.getDate() - daysAgo);
+            return {
+                user: user._id,
                 orderItems: [{
-                    name: 'Classic Leather Jacket',
-                    qty: 1,
-                    image: '/assets/jacket.jpg',
-                    price: 299,
-                    product: product1
+                    name: product.name,
+                    qty: Math.floor(Math.random() * 3) + 1,
+                    image: product.thumbnailUrl,
+                    price: product.price_base,
+                    product: product._id
                 }],
                 shippingAddress: {
-                    firstName: 'Jane',
-                    lastName: 'Designer',
-                    address: '123 Fake St',
-                    city: 'New York',
-                    postalCode: '10001',
-                    country: 'USA'
+                    firstName: user.name.split(' ')[0],
+                    lastName: 'User',
+                    address: '123 Maker St',
+                    city: 'Innovation City',
+                    postalCode: '10101',
+                    country: 'India'
                 },
                 paymentMethod: 'Credit Card',
-                paymentResult: { id: 'mock_payment_1', status: 'completed', update_time: Date.now(), email_address: 'designer@example.com' },
-                itemsPrice: 299,
-                taxPrice: 29.9,
-                shippingPrice: 0,
-                totalPrice: 328.9,
-                isPaid: true,
-                paidAt: Date.now(),
-                isDelivered: false
-            },
-            {
-                user: designer._id,
-                orderItems: [{
-                    name: 'Premium Tote Bag',
-                    qty: 2,
-                    image: '/assets/bag.jpg',
-                    price: 149,
-                    product: product2
-                }],
-                shippingAddress: {
-                    firstName: 'Jane',
-                    lastName: 'Designer',
-                    address: '456 Design Blvd',
-                    city: 'Los Angeles',
-                    postalCode: '90001',
-                    country: 'USA'
-                },
-                paymentMethod: 'PayPal',
-                paymentResult: { id: 'mock_payment_2', status: 'completed', update_time: Date.now(), email_address: 'designer@example.com' },
-                itemsPrice: 298,
-                taxPrice: 20,
-                shippingPrice: 15,
-                totalPrice: 333,
-                isPaid: true,
-                paidAt: Date.now() - 86400000, // Yesterday
-                isDelivered: true,
-                deliveredAt: Date.now()
-            }
-        ];
-        await Order.insertMany(orders);
-        console.log('Seeded Orders');
+                paymentResult: { id: `mock_pay_${Date.now()}_${Math.random()}`, status: 'completed', update_time: date, email_address: user.email },
+                itemsPrice: product.price_base,
+                taxPrice: product.price_base * 0.1,
+                shippingPrice: 10,
+                totalPrice: product.price_base * 1.1 + 10,
+                isPaid: isPaid,
+                paidAt: isPaid ? date : null,
+                isDelivered: daysAgo > 5, // Old orders delivered
+                createdAt: date
+            };
+        };
 
-        // 3. Seed Designs (Review Queue)
+        // Generate 20 random orders spanning last 30 days
+        for (let i = 0; i < 20; i++) {
+            const user = users[Math.floor(Math.random() * users.length)];
+            const product = Math.random() > 0.5 ? p1 : p2;
+            const daysAgo = Math.floor(Math.random() * 30);
+            orders.push(createOrder(user, product, daysAgo));
+        }
+
+        // Specific recent orders for visibility
+        orders.push(createOrder(kailash, p1, 1));
+        orders.push(createOrder(varsha, p2, 2, false)); // Unpaid
+
+        await Order.insertMany(orders);
+        console.log(`Seeded ${orders.length} Orders`);
+
+        // 4. Seed Designs (Review Queue)
         await Design.deleteMany({});
         const designs = [
             {
-                user: designer._id,
-                name: 'Red Dragon Vest',
-                configuration: { color: 'red', material: 'dragon-scale' },
-                product: product1,
+                user: siddhant._id,
+                name: 'Neon Cyberpunk Jacket',
+                configuration: { color: 'neon-green', material: 'synthetic-leather' },
+                product: p1._id,
                 status: 'pending',
-                previewImageUrl: 'https://placehold.co/600x400/800000/FFF?text=Red+Dragon+Vest'
+                previewImageUrl: 'https://placehold.co/600x400/00FF00/000?text=Cyberpunk+Jacket'
             },
             {
-                user: designer._id,
-                name: 'Blue Suede Shoes',
-                configuration: { color: 'blue', material: 'suede' },
-                product: product2,
+                user: varsha._id,
+                name: 'Vintage Floral Bag',
+                configuration: { color: 'brown', material: 'embossed-leather' },
+                product: p2._id,
                 status: 'pending',
-                previewImageUrl: 'https://placehold.co/600x400/000080/FFF?text=Blue+Suede+Shoes'
+                previewImageUrl: 'https://placehold.co/600x400/8B4513/FFF?text=Floral+Bag'
+            },
+            {
+                user: jane._id,
+                name: 'Minimalist Wallet',
+                configuration: { color: 'black', material: 'matte-finish' },
+                product: p1._id, // assuming wallet matches p1 for now
+                status: 'approved',
+                previewImageUrl: 'https://placehold.co/600x400/333/FFF?text=Wallet'
             }
         ];
         await Design.insertMany(designs);
-        console.log('Seeded Designs');
+        console.log(`Seeded ${designs.length} Designs`);
 
         console.log('Admin Data Seeded Successfully!');
         process.exit();

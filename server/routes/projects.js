@@ -36,4 +36,46 @@ router.post('/', protect, admin, async (req, res) => {
     }
 });
 
+
+
+// @desc    Delete a project
+// @route   DELETE /api/projects/:id
+// @access  Private/Admin
+router.delete('/:id', protect, admin, async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.id);
+        if (project) {
+            await project.deleteOne();
+            res.json({ message: 'Project removed' });
+        } else {
+            res.status(404);
+            throw new Error('Project not found');
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// @desc    Update a project
+// @route   PUT /api/projects/:id
+// @access  Private/Admin
+router.put('/:id', protect, admin, async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.id);
+        if (project) {
+            project.name = req.body.name || project.name;
+            project.description = req.body.description || project.description;
+            project.status = req.body.status || project.status;
+
+            const updatedProject = await project.save();
+            res.json(updatedProject);
+        } else {
+            res.status(404);
+            throw new Error('Project not found');
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
 export default router;

@@ -17,7 +17,7 @@ export default function ProductDetailPage() {
     };
 
     return (
-        <div className="min-h-screen bg-background-dark text-white">
+        <div className="min-h-screen bg-neutral-950 text-white">
             <Navbar />
             <div className="container mx-auto px-6 py-12">
                 <Link to="/catalog" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-8">
