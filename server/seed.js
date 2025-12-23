@@ -132,23 +132,29 @@ const importData = async () => {
 
         // --- NEW: Designs (Review Queue) ---
         console.log('Seeding Designs...');
-        const designUser = await User.findOne({ email: 'siddhant@example.com' });
+        const userSiddhant = await User.findOne({ email: 'siddhant@example.com' });
+        const userKailash = await User.findOne({ email: 'kailash@example.com' });
+        const userVarsha = await User.findOne({ email: 'varsha@example.com' });
+
         const designProduct = await Product.findOne({ category: 'jacket' });
         const designProduct2 = await Product.findOne({ category: 'bag' });
 
-        if (designUser && designProduct) {
+        if (userSiddhant && designProduct) {
             const designs = [
-                { user: designUser, product: designProduct, name: 'Red Racer Custom', status: 'pending', configuration: { color: 'red' } },
-                { user: designUser, product: designProduct, name: 'Siddhant Biker Special', status: 'approved', configuration: { color: 'black' } },
-                { user: designUser, product: designProduct, name: 'Cyberpunk Jacket', status: 'pending', configuration: { color: 'neon' } },
-                { user: designUser, product: designProduct2, name: 'Neon Messenger', status: 'pending', configuration: { color: 'green' } },
-                { user: designUser, product: designProduct, name: 'Stealth Bomber', status: 'rejected', configuration: { color: 'matte black' } }
+                { user: userSiddhant, product: designProduct, name: 'Red Racer Custom', status: 'pending', configuration: { color: 'red' } },
+                { user: userSiddhant, product: designProduct, name: 'Siddhant Biker Special', status: 'approved', configuration: { color: 'black' } },
+                { user: userKailash, product: designProduct2, name: 'Kailash Executive', status: 'pending', configuration: { color: 'brown' } },
+                { user: userVarsha, product: designProduct, name: 'Varsha Summer Vibe', status: 'pending', configuration: { color: 'white' } },
+                { user: userVarsha, product: designProduct2, name: 'Floral Bag Custom', status: 'approved', configuration: { color: 'pink' } },
+                { user: userSiddhant, product: designProduct, name: 'Stealth Bomber', status: 'rejected', configuration: { color: 'matte black' } }
             ];
 
             for (const d of designs) {
-                const exists = await Design.findOne({ name: d.name });
-                if (!exists) {
-                    await Design.create(d);
+                if (d.user) { // Ensure user exists before creating
+                    const exists = await Design.findOne({ name: d.name });
+                    if (!exists) {
+                        await Design.create(d);
+                    }
                 }
             }
         }
@@ -156,45 +162,38 @@ const importData = async () => {
 
         // --- NEW: Orders ---
         console.log('Seeding Orders...');
-        const orderUser = await User.findOne({ email: 'kailash@example.com' });
 
-        if (orderUser && designProduct) {
+        if (userKailash && designProduct) {
             const orders = [
                 {
-                    user: orderUser,
+                    user: userKailash,
                     orderItems: [{ name: designProduct.name, qty: 1, price: designProduct.price_base, product: designProduct }],
                     shippingAddress: { firstName: 'Kailash', lastName: 'User', address: '123 Main St', city: 'Mumbai', postalCode: '400001', country: 'India' },
                     totalPrice: designProduct.price_base,
                     isPaid: true,
                     isDelivered: false,
+                    status: 'Processing',
                     createdAt: new Date('2025-12-20')
                 },
                 {
-                    user: orderUser,
-                    orderItems: [{ name: designProduct.name, qty: 2, price: designProduct.price_base, product: designProduct }],
-                    shippingAddress: { firstName: 'Kailash', lastName: 'User', address: '123 Main St', city: 'Mumbai', postalCode: '400001', country: 'India' },
-                    totalPrice: designProduct.price_base * 2,
+                    user: userVarsha,
+                    orderItems: [{ name: designProduct2.name, qty: 1, price: designProduct2.price_base, product: designProduct2 }],
+                    shippingAddress: { firstName: 'Varsha', lastName: 'User', address: '456 Park Ave', city: 'Delhi', postalCode: '110001', country: 'India' },
+                    totalPrice: designProduct2.price_base,
                     isPaid: true,
                     isDelivered: true,
-                    createdAt: new Date('2025-12-18')
+                    status: 'Shipped',
+                    createdAt: new Date('2025-12-19')
                 },
                 {
-                    user: orderUser,
-                    orderItems: [{ name: designProduct2.name, qty: 1, price: designProduct2.price_base, product: designProduct2 }],
-                    shippingAddress: { firstName: 'Kailash', lastName: 'User', address: 'Andheri West', city: 'Mumbai', postalCode: '400053', country: 'India' },
-                    totalPrice: designProduct2.price_base,
-                    isPaid: false,
-                    isDelivered: false,
-                    createdAt: new Date() // Recent
-                },
-                {
-                    user: orderUser,
-                    orderItems: [{ name: 'Custom Wallet', qty: 3, price: 50, product: designProduct }], // Mock item
-                    shippingAddress: { firstName: 'Kailash', lastName: 'User', address: 'Bandra', city: 'Mumbai', postalCode: '400050', country: 'India' },
-                    totalPrice: 150,
+                    user: userSiddhant,
+                    orderItems: [{ name: designProduct.name, qty: 2, price: designProduct.price_base, product: designProduct }],
+                    shippingAddress: { firstName: 'Siddhant', lastName: 'Designer', address: '789 Tech Park', city: 'Bangalore', postalCode: '560001', country: 'India' },
+                    totalPrice: designProduct.price_base * 2,
                     isPaid: true,
                     isDelivered: false,
-                    createdAt: new Date() // Recent
+                    status: 'Processing',
+                    createdAt: new Date('2025-12-22')
                 }
             ];
 
