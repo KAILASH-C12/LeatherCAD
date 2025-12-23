@@ -34,7 +34,7 @@ export default function AboutPage() {
                             Founded in 2024, LeatherCAD began with a simple question: Why is customizing luxury leather goods so difficult online?
                         </p>
                         <p className="text-gray-400 leading-relaxed">
-                            We set out to build a platform that gives artisans the power of industrial CAD tools with the simplicity of a consumer app. Today, we empower thousands of creators to bring their visions to life instantly.
+                            We have set out to build a platform that gives artisans the power of industrial CAD tools with the simplicity of a consumer app. Today, we empower thousands of creators to bring their visions to life instantly.
                         </p>
                     </div>
                     <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 bg-white/5">
