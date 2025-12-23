@@ -75,6 +75,26 @@ router.put('/:id/deliver', protect, admin, async (req, res) => {
     }
 });
 
+// @desc    Update order status
+// @route   PUT /api/orders/:id/status
+// @access  Private/Admin
+router.put('/:id/status', protect, admin, async (req, res) => {
+    const order = await Order.findById(req.params.id);
+
+    if (order) {
+        order.status = req.body.status || order.status;
+        if (req.body.status === 'Delivered') {
+            order.isDelivered = true;
+            order.deliveredAt = Date.now();
+        }
+        const updatedOrder = await order.save();
+        res.json(updatedOrder);
+    } else {
+        res.status(404);
+        throw new Error('Order not found');
+    }
+});
+
 // @desc    Delete order
 // @route   DELETE /api/orders/:id
 // @access  Private/Admin

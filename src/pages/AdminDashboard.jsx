@@ -91,13 +91,14 @@ export default function AdminDashboard() {
         const loadRealData = async () => {
             try {
                 // If the backend is running and seeded, these will overwrite the mocks
-                const [statsRes, ordersRes, productsRes, projectsRes, designsRes, usersRes] = await Promise.allSettled([
+                const [statsRes, ordersRes, productsRes, projectsRes, designsRes, usersRes, materialsRes] = await Promise.allSettled([
                     api.get('/stats/admin'),
                     api.get('/orders'),
                     api.get('/products'),
                     api.get('/projects'),
                     api.get('/designs'),
-                    api.get('/users')
+                    api.get('/users'),
+                    api.get('/materials')
                 ]);
 
                 if (statsRes.status === 'fulfilled') setStats(prev => ({ ...prev, ...statsRes.value.data }));
@@ -106,6 +107,9 @@ export default function AdminDashboard() {
                 if (projectsRes.status === 'fulfilled' && projectsRes.value.data.length > 0) setProjects(projectsRes.value.data);
                 if (designsRes.status === 'fulfilled' && designsRes.value.data.length > 0) setDesigns(designsRes.value.data);
                 if (usersRes.status === 'fulfilled' && usersRes.value.data.length > 0) setUsersList(usersRes.value.data);
+                if (materialsRes.status === 'fulfilled' && materialsRes.value.data.length > 0) setMaterials(materialsRes.value.data);
+                // The 7th element (index 6) is materials, but we destructured only 6 vars above. Let's fix that structure in next step if needed or just access by index if I hadn't destructured. 
+                // Wait, I need to update the destructuring too.
 
             } catch (err) {
                 console.warn("Using mock data due to API error:", err);
@@ -167,6 +171,27 @@ export default function AdminDashboard() {
                 setProducts(prev => [productToAdd, ...prev]);
                 setNewProduct({ name: '', category: 'jacket', price_base: 0, description: '', thumbnailUrl: '', modelUrl: '' });
             }
+        );
+    };
+
+    const handleAddMaterial = (e) => {
+        e.preventDefault();
+        const matToAdd = { ...newMaterial, _id: `MAT-${Date.now()}` };
+        performAction(
+            () => api.post('/materials', newMaterial),
+            'Material added',
+            () => {
+                setMaterials(prev => [matToAdd, ...prev]);
+                setNewMaterial({ name: '', type: 'leather', color: '', price: 0, imageUrl: '' });
+            }
+        );
+    };
+
+    const handleUpdateOrderStatus = (id, status) => {
+        performAction(
+            () => api.put(`/orders/${id}/status`, { status }),
+            `Order marked as ${status}`,
+            () => setOrders(prev => prev.map(o => o._id === id ? { ...o, status, isDelivered: status === 'Delivered' } : o))
         );
     };
 
@@ -367,10 +392,23 @@ export default function AdminDashboard() {
                                                 <td className="p-4">{order.user?.name}</td>
                                                 <td className="p-4 truncate max-w-[150px]">{Array.isArray(order.items) ? order.items.join(', ') : order.orderItems?.map(i => i.name).join(', ')}</td>
                                                 <td className="p-4 font-bold">${order.total}</td>
-                                                <td className="p-4"><span className={`px-2 py-1 rounded text-xs ${order.status === 'Delivered' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{order.status}</span></td>
+                                                <td className="p-4">
+                                                    <select
+                                                        value={order.status}
+                                                        onChange={(e) => handleUpdateOrderStatus(order._id, e.target.value)}
+                                                        className={`px-2 py-1 rounded text-xs font-bold border-none outline-none cursor-pointer ${order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
+                                                            order.status === 'Shipped' ? 'bg-blue-100 text-blue-700' :
+                                                                'bg-yellow-100 text-yellow-700'
+                                                            }`}
+                                                    >
+                                                        <option value="Processing">Processing</option>
+                                                        <option value="Shipped">Shipped</option>
+                                                        <option value="Delivered">Delivered</option>
+                                                        <option value="Cancelled">Cancelled</option>
+                                                    </select>
+                                                </td>
                                                 <td className="p-4 flex gap-2">
-                                                    {order.status !== 'Delivered' && <button onClick={() => handleDeliver(order._id)} className="p-2 bg-primary/10 text-primary rounded"><CheckCircle size={16} /></button>}
-                                                    <button onClick={() => handleDeleteOrder(order._id)} className="p-2 bg-destructive/10 text-destructive rounded"><Trash2 size={16} /></button>
+                                                    <button onClick={() => handleDeleteOrder(order._id)} className="p-2 bg-destructive/10 text-destructive rounded hover:bg-destructive/20 transition-colors"><Trash2 size={16} /></button>
                                                 </td>
                                             </tr>
                                         ))}
@@ -400,9 +438,9 @@ export default function AdminDashboard() {
                             <div id="new-prod" className="bg-card p-6 rounded-xl border mt-8">
                                 <h3 className="font-bold mb-4">Add Product</h3>
                                 <form onSubmit={handleAddProduct} className="flex gap-4">
-                                    <input placeholder="Name" className="border p-2 rounded w-full" value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} />
-                                    <input placeholder="Price" className="border p-2 rounded w-32" type="number" value={newProduct.price_base} onChange={e => setNewProduct({ ...newProduct, price_base: e.target.value })} />
-                                    <button className="bg-primary text-primary-foreground px-6 rounded">Add</button>
+                                    <input placeholder="Name" className="bg-secondary border-border text-foreground border p-2 rounded w-full outline-none focus:ring-1 focus:ring-primary" value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} />
+                                    <input placeholder="Price" className="bg-secondary border-border text-foreground border p-2 rounded w-32 outline-none focus:ring-1 focus:ring-primary" type="number" value={newProduct.price_base} onChange={e => setNewProduct({ ...newProduct, price_base: e.target.value })} />
+                                    <button className="bg-primary text-primary-foreground px-6 rounded font-bold">Add</button>
                                 </form>
                             </div>
                         </div>
@@ -442,8 +480,8 @@ export default function AdminDashboard() {
                                 <div className="bg-primary/5 border-2 border-dashed border-primary/20 rounded-2xl p-6 flex flex-col justify-center items-center cursor-pointer">
                                     <h3 className="font-bold">New Project</h3>
                                     <form onSubmit={handleCreateProject} className="w-full mt-4 space-y-2">
-                                        <input className="w-full p-2 border rounded" placeholder="Name" value={newProject.name} onChange={e => setNewProject({ ...newProject, name: e.target.value })} />
-                                        <button className="w-full bg-primary text-primary-foreground py-2 rounded">Create</button>
+                                        <input className="w-full bg-secondary border-border text-foreground p-2 border rounded outline-none focus:ring-1 focus:ring-primary" placeholder="Name" value={newProject.name} onChange={e => setNewProject({ ...newProject, name: e.target.value })} />
+                                        <button className="w-full bg-primary text-primary-foreground py-2 rounded font-bold">Create</button>
                                     </form>
                                 </div>
                                 {projects.map(p => (
@@ -457,6 +495,95 @@ export default function AdminDashboard() {
                             </div>
                         </div>
 
+                        /* MATERIALS TAB */
+                    ) : activeTab === 'materials' ? (
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-center">
+                                <h1 className="text-2xl font-bold">Materials</h1>
+                                <button onClick={() => document.getElementById('new-mat').scrollIntoView()} className="bg-primary text-primary-foreground px-4 py-2 rounded-xl text-sm font-bold">Add New</button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {materials.map(m => (
+                                    <div key={m._id} className="bg-card border border-border rounded-xl p-4 flex gap-4 group relative">
+                                        <div className="w-16 h-16 rounded-lg bg-secondary flex items-center justify-center text-xs text-muted-foreground overflow-hidden">
+                                            {m.imageUrl ? <img src={m.imageUrl} className="w-full h-full object-cover" /> : "No Img"}
+                                        </div>
+                                        <div>
+                                            <div className="font-bold">{m.name}</div>
+                                            <div className="text-xs text-muted-foreground capitalize">{m.type} • {m.color}</div>
+                                            <div className="font-mono text-sm mt-1">${m.price}</div>
+                                        </div>
+                                        <button className="absolute top-2 right-2 p-2 text-destructive opacity-0 group-hover:opacity-100 transition-opacity" title="Delete">
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                                {materials.length === 0 && <div className="text-muted-foreground col-span-3 text-center py-10">No materials found. Add one below.</div>}
+                            </div>
+
+                            <div id="new-mat" className="bg-card p-6 rounded-xl border border-border mt-8">
+                                <h3 className="font-bold mb-4">Add Material</h3>
+                                <form onSubmit={handleAddMaterial} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <input placeholder="Name" className="bg-secondary border-border border p-3 rounded-lg text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary" value={newMaterial.name} onChange={e => setNewMaterial({ ...newMaterial, name: e.target.value })} />
+                                    <select className="bg-secondary border-border border p-3 rounded-lg text-foreground outline-none focus:ring-1 focus:ring-primary" value={newMaterial.type} onChange={e => setNewMaterial({ ...newMaterial, type: e.target.value })}>
+                                        <option value="leather">Leather</option>
+                                        <option value="hardware">Hardware</option>
+                                        <option value="thread">Thread</option>
+                                        <option value="fabric">Fabric</option>
+                                    </select>
+                                    <input placeholder="Color" className="bg-secondary border-border border p-3 rounded-lg text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary" value={newMaterial.color} onChange={e => setNewMaterial({ ...newMaterial, color: e.target.value })} />
+                                    <input placeholder="Price" type="number" className="bg-secondary border-border border p-3 rounded-lg text-foreground placeholder:text-muted-foreground outline-none focus:ring-1 focus:ring-primary" value={newMaterial.price} onChange={e => setNewMaterial({ ...newMaterial, price: e.target.value })} />
+                                    <div className="md:col-span-2">
+                                        <button className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold w-full md:w-auto">Add Material</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        /* SETTINGS TAB */
+                    ) : activeTab === 'settings' ? (
+                        <div className="max-w-2xl space-y-8">
+                            <h1 className="text-2xl font-bold">Settings</h1>
+
+                            <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+                                <h3 className="font-bold border-b border-border pb-2">Profile Settings</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-muted-foreground">Admin Name</label>
+                                        <input className="w-full bg-secondary border border-border rounded-lg p-2 text-foreground" defaultValue="Kailash" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-muted-foreground">Email</label>
+                                        <input className="w-full bg-secondary border border-border rounded-lg p-2 text-foreground" defaultValue="admin@leathercad.com" readOnly />
+                                    </div>
+                                </div>
+                                <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-bold text-sm">Update Profile</button>
+                            </div>
+
+                            <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+                                <h3 className="font-bold border-b border-border pb-2">System Config</h3>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="font-medium">Maintenance Mode</div>
+                                        <div className="text-xs text-muted-foreground">Disable store access for customers</div>
+                                    </div>
+                                    <div className="h-6 w-11 bg-secondary rounded-full relative cursor-pointer border border-border">
+                                        <div className="absolute left-1 top-1 h-4 w-4 bg-muted-foreground rounded-full transition-all"></div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <div className="font-medium">Allow New Signups</div>
+                                        <div className="text-xs text-muted-foreground">Toggle user registration</div>
+                                    </div>
+                                    <div className="h-6 w-11 bg-primary rounded-full relative cursor-pointer">
+                                        <div className="absolute right-1 top-1 h-4 w-4 bg-white rounded-full transition-all shadow"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         /* USERS TAB */
                     ) : activeTab === 'users' ? (
                         <div className="space-y-6">
@@ -466,11 +593,11 @@ export default function AdminDashboard() {
                                     <thead className="bg-muted/30 border-b"><tr><th className="p-4">Name</th><th className="p-4">Email</th><th className="p-4">Role</th><th className="p-4">Actions</th></tr></thead>
                                     <tbody>
                                         {usersList.map(u => (
-                                            <tr key={u._id} className="border-b">
+                                            <tr key={u._id} className="border-b border-border/50 hover:bg-secondary/20 transition-colors">
                                                 <td className="p-4 font-bold">{u.name}</td>
                                                 <td className="p-4 text-muted-foreground">{u.email}</td>
-                                                <td className="p-4"><span className="px-2 py-1 bg-secondary rounded text-xs uppercase font-bold">{u.role}</span></td>
-                                                <td className="p-4"><button onClick={() => handleDeleteUser(u._id)} className="text-destructive"><Trash2 size={16} /></button></td>
+                                                <td className="p-4"><span className="px-2 py-1 bg-secondary rounded text-xs uppercase font-bold text-primary">{u.role}</span></td>
+                                                <td className="p-4"><button onClick={() => handleDeleteUser(u._id)} className="text-destructive p-2 hover:bg-destructive/10 rounded"><Trash2 size={16} /></button></td>
                                             </tr>
                                         ))}
                                     </tbody>
